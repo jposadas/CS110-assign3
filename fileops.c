@@ -29,6 +29,11 @@ static uint64_t numisfiles = 0;
  * Table of open files.
  */
 static struct {
+  int inumber;		 // inumber associated with open file
+  int err;			 // int for return value 
+  struct inode node; // inode associated with inode
+  int inodeSize;
+
   char *pathname;    // absolute pathname NULL if slot is not used.
   int  cursor;       // Current position in the file
 } openFileTable[MAX_FILES];
@@ -79,7 +84,9 @@ Fileops_open(char *pathname)
   }
   openFileTable[fd].pathname = strdup(pathname); // Save our own copy
   openFileTable[fd].cursor = 0;
-
+  openFileTable[fd].inumber = inumber;
+  openFileTable[fd].err = inode_iget(unixfs, inumber, &(openFileTable[fd].node));
+  openFileTable[fd].inodeSize = inode_getsize(&(openFileTable[fd].node));
   return fd;
 }
 
@@ -99,28 +106,38 @@ Fileops_getchar(int fd)
 
   numgetchars++;
 
-  if (openFileTable[fd].pathname == NULL)
+
+  char *pathname = openFileTable[fd].pathname;
+  int *cursor = &(openFileTable[fd].cursor);
+  
+  if (pathname == NULL)
     return -1;  // fd not opened.
 
-  inumber = pathname_lookup(unixfs, openFileTable[fd].pathname);
+  //inumber = pathname_lookup(unixfs, pathname);
+  inumber = openFileTable[fd].inumber;
   if (inumber < 0) {
     return inumber; // Can't find file
   }
 
-  err = inode_iget(unixfs, inumber,&in);
+  
+  //err = inode_iget(unixfs, inumber,&in);
+  err = openFileTable[fd].err;
   if (err < 0) {
     return err;
   }
+	
+  in = openFileTable[fd].node;	
   if (!(in.i_mode & IALLOC)) {
     return -1;
   }
 
-  size = inode_getsize(&in);
+  //size = inode_getsize(&in);
+  size = openFileTable[fd].inodeSize;
 
-  if (openFileTable[fd].cursor >= size) return -1; // Finished with file
+  if (*cursor >= size) return -1; // Finished with file
 
-  blockNo = openFileTable[fd].cursor / DISKIMG_SECTOR_SIZE;
-  blockOffset =  openFileTable[fd].cursor % DISKIMG_SECTOR_SIZE;
+  blockNo = *cursor / DISKIMG_SECTOR_SIZE;
+  blockOffset =  *cursor % DISKIMG_SECTOR_SIZE;
 
   bytesMoved = file_getblock(unixfs, inumber,blockNo,buf);
   if (bytesMoved < 0) {
@@ -129,7 +146,7 @@ Fileops_getchar(int fd)
   assert(bytesMoved > blockOffset);
 
 
-  openFileTable[fd].cursor += 1;
+  *cursor += 1; //actual change
 
   return (int)(buf[blockOffset]);
 }
