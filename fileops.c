@@ -32,7 +32,11 @@ static struct {
   int inumber;		 // inumber associated with open file
   int err;			 // int for return value 
   struct inode node; // inode associated with inode
-  int inodeSize;
+  int inodeSize;	 // inode size
+  int bytesMoved;    // number of bytes read into buf
+  int blockNo;		 // current block number
+  unsigned char buf[DISKIMG_SECTOR_SIZE]; // space to hold the block of memory
+
 
   char *pathname;    // absolute pathname NULL if slot is not used.
   int  cursor;       // Current position in the file
@@ -87,6 +91,9 @@ Fileops_open(char *pathname)
   openFileTable[fd].inumber = inumber;
   openFileTable[fd].err = inode_iget(unixfs, inumber, &(openFileTable[fd].node));
   openFileTable[fd].inodeSize = inode_getsize(&(openFileTable[fd].node));
+  openFileTable[fd].blockNo = 0;
+  openFileTable[fd].bytesMoved = file_getblock(unixfs, openFileTable[fd].inumber, openFileTable[fd].blockNo, &(openFileTable[fd].buf));
+  
   return fd;
 }
 
@@ -139,16 +146,21 @@ Fileops_getchar(int fd)
   blockNo = *cursor / DISKIMG_SECTOR_SIZE;
   blockOffset =  *cursor % DISKIMG_SECTOR_SIZE;
 
-  bytesMoved = file_getblock(unixfs, inumber,blockNo,buf);
-  if (bytesMoved < 0) {
+  //printf("blockNo %d, blockOffset %d, inumber %d\n", blockNo, blockOffset, openFileTable[fd].inumber);
+
+  if(blockNo != openFileTable[fd].blockNo) {  	
+	openFileTable[fd].blockNo = blockNo;
+	openFileTable[fd].bytesMoved = file_getblock(unixfs, inumber, blockNo, &(openFileTable[fd].buf)); //could change blockNo for openFileTable[fd].blockNo, but it's unnecessary
+  }
+
+  if (openFileTable[fd].bytesMoved < 0) {
     return -1;
   }
-  assert(bytesMoved > blockOffset);
-
+  assert(openFileTable[fd].bytesMoved > blockOffset);
 
   *cursor += 1; //actual change
 
-  return (int)(buf[blockOffset]);
+  return (int)(openFileTable[fd].buf[blockOffset]);
 }
 
 /*
