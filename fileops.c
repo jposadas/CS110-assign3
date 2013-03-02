@@ -106,8 +106,8 @@ Fileops_getchar(int fd)
 {
   int inumber;
   struct inode in;
-  unsigned char buf[DISKIMG_SECTOR_SIZE];
-  int bytesMoved;
+  //unsigned char buf[DISKIMG_SECTOR_SIZE];
+  //int bytesMoved;
   int err, size;
   int blockNo, blockOffset;
 

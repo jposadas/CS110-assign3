@@ -14,6 +14,20 @@ extern void *cacheMemPtr;
 
 #define CACHEMEM_MAX_SIZE (64*1024*1024)
 
+#define FILE_BLOCK_SIZE 512 
+
+struct cacheBlock{
+  int diskBlockNumber;
+  unsigned char buf[FILE_BLOCK_SIZE];
+};
+
+
 int CacheMem_Init(int sizeInKB);
+
+void putBlockInCache(); // puts block in cache
+
+int totalCacheSize(); // returns the total size in the cache
+
+int isBlockInCache(); // returns 1 if block is in cache, 0 otherwise
 
 #endif /* _CACHEMEM_H */

@@ -16,6 +16,8 @@
 
 int cacheMemSizeInKB;
 void *cacheMemPtr;
+static int maxNumBlocks;
+static int numOfBlocks;
 
 /*
  * Allocate memory of the specified size for the data cache optimizations
@@ -40,7 +42,49 @@ CacheMem_Init(int sizeInKB)
   }
   cacheMemSizeInKB = sizeInKB;
   cacheMemPtr = memPtr;
+  maxNumBlocks = cacheMemSizeInKB * 1024 / FILE_BLOCK_SIZE; 
+  numOfBlocks = 0;
   return 0;
+}
+
+/*
+ * Puts a block in the cache, and replaces it with another if maximum capacity is exceeded
+ */
+
+
+void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
+{
+  struct cacheBlock *placeForBlock = ((struct cacheBlock *)cacheMemPtr) + numOfBlocks;
+  placeForBlock->diskBlockNumber = diskBlockNumber;
+  memcpy((char *)placeForBlock + sizeof(int), buf, bytesRead); // copy the content of the parameter buf into the place found for the block in cache
+  numOfBlocks++;
+
+}
+
+
+/*
+ * Returns size of the cache
+ */
+
+int totalCacheSize()
+{
+  return numOfBlocks * sizeof(struct cacheBlock);
+}
+
+/*
+ * Iterates through cache to find element
+ */
+
+int isBlockInCache(int diskBlockNumber)
+{
+  
+  for(int i = 0; i < numOfBlocks; i++) {
+  	if(((struct cacheBlock *)cacheMemPtr)[i].diskBlockNumber == diskBlockNumber)	// iterate through blocks to find if a cacheBlock exists associated with the parameter
+		return 1;
+  }
+
+  return -1;
+
 }
 
 
