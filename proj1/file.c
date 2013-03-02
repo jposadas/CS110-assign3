@@ -19,7 +19,7 @@ file_getblock(struct unixfilesystem *fs, int inumber, int blockNum, void *buf)
 	int rv = inode_iget(fs, inumber, &ino);
 	if(rv == 0) {
 		int diskBlockNum = inode_indexlookup(fs, &ino, blockNum);
-		printf("fdf: %d, diskBlockNum: %d\n", fs->dfd, diskBlockNum);
+		printf("fdf: %d, inumber: %d, blockNum: %d, diskBlockNum: %d\n", fs->dfd, inumber, blockNum, diskBlockNum);
 		int numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf);
 		
 		if(numBytesRead == -1) return -1;

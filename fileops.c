@@ -151,6 +151,7 @@ Fileops_getchar(int fd)
   if(blockNo != openFileTable[fd].blockNo) {  	
 	openFileTable[fd].blockNo = blockNo;
 	openFileTable[fd].bytesMoved = file_getblock(unixfs, inumber, blockNo, &(openFileTable[fd].buf)); //could change blockNo for openFileTable[fd].blockNo, but it's unnecessary
+  	//printf("getting block\n");
   }
 
   if (openFileTable[fd].bytesMoved < 0) {
