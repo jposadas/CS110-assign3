@@ -20,6 +20,9 @@ inode_iget(struct unixfilesystem *fs, int inumber, struct inode *inp)
 	int numInodesInSector = DISKIMG_SECTOR_SIZE / sizeof(struct inode);
 	int sectorNumber = 2 + (indexNum / numInodesInSector);
 	char buffer[512];
+
+	// cache it up?
+
 	int bytesRead = diskimg_readsector(fs->dfd, sectorNumber, &buffer);
 	
 	if(bytesRead == -1) return -1;
@@ -44,6 +47,9 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 		int blockToRead = indirectBlock;
 		uint16_t blocks[FILE_BLOCKS_IN_IMGSCTR]; 
 		if(indirectBlock > 6) blockToRead = 7; // Read last element of blocks if the indirect block is bigger than 6	
+		
+		// cache it up
+		
 		int bytesRead = diskimg_readsector(fs->dfd, inp->i_addr[blockToRead], &blocks);
 		
 		if(indirectBlock <= 6) {	

@@ -24,10 +24,12 @@ struct cacheBlock{
 
 int CacheMem_Init(int sizeInKB);
 
-void putBlockInCache(); // puts block in cache
+void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead); // puts block in cache
+
+int getBlockFromCache(int diskBlockNumber, void *buf, int index); // gets the specified stored block in the cache
 
 int totalCacheSize(); // returns the total size in the cache
 
-int isBlockInCache(); // returns 1 if block is in cache, 0 otherwise
+int isBlockInCache(int diskBlockNumber); // returns 1 if block is in cache, 0 otherwise
 
 #endif /* _CACHEMEM_H */

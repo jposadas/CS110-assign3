@@ -5,6 +5,7 @@
 #include "file.h"
 #include "inode.h"
 #include "diskimg.h"
+#include "../cachemem.h"
 
 #define FILE_BLOCK_SIZE 512
 
@@ -20,7 +21,20 @@ file_getblock(struct unixfilesystem *fs, int inumber, int blockNum, void *buf)
 	if(rv == 0) {
 		int diskBlockNum = inode_indexlookup(fs, &ino, blockNum);
 		//printf("fdf: %d, inumber: %d, blockNum: %d, diskBlockNum: %d\n", fs->dfd, inumber, blockNum, diskBlockNum);
-		int numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf);
+		
+		int numBytesRead;
+		//cache it up
+		numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf);
+		//printf("numBytesRead: %d, diskBlockNum: %d\n", numBytesRead, diskBlockNum);
+		int cacheIndex = isBlockInCache(diskBlockNum);
+		/*	
+		if(cacheIndex > -1) {
+			numBytesRead = getBlockFromCache(diskBlockNum, buf, cacheIndex);
+		} else {
+			numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf); 
+			putBlockInCache(diskBlockNum, buf, numBytesRead); 
+		}*/
+		
 		
 		if(numBytesRead == -1) return -1;
 		int inodeSize = inode_getsize(&ino);

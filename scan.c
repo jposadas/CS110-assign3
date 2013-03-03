@@ -46,7 +46,7 @@ Scan_File(char *inpathname, Index *ind, Pathstore *store, int discardDups)
 
   int fd = Fileops_open(pathname);
   if (fd < 0) {
-    fprintf(stderr, "Can't open pathname %s\n", pathname);
+    fprintf(stderr, "Can't open pathname(file) %s\n", pathname);
     return -1;
   }
 
@@ -99,7 +99,7 @@ Scan_TreeAndIndex(char *pathname, Index *ind, Pathstore *store,int discardDups)
 
   int dirfd = Fileops_open(pathname);
   if (dirfd < 0) {
-    fprintf(stderr, "Can't open pathname %s\n", pathname);
+    fprintf(stderr, "Can't open pathname(tree and index) %s\n", pathname);
     return -1;
   }
 

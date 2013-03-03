@@ -28,7 +28,8 @@ CacheMem_Init(int sizeInKB)
 {
   /* Size needs to be not negative or too big and 
    * multiple of the 4KB page size 
-   */
+
+*/
   if ((sizeInKB < 0) || (sizeInKB > (CACHEMEM_MAX_SIZE/1024))
       || (sizeInKB % 4)) {
     fprintf(stderr, "Bad cache size %d\n", sizeInKB);
@@ -47,6 +48,8 @@ CacheMem_Init(int sizeInKB)
   return 0;
 }
 
+
+
 /*
  * Puts a block in the cache, and replaces it with another if maximum capacity is exceeded
  */
@@ -54,11 +57,33 @@ CacheMem_Init(int sizeInKB)
 
 void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
 {
-  struct cacheBlock *placeForBlock = ((struct cacheBlock *)cacheMemPtr) + numOfBlocks;
+  struct cacheBlock *placeForBlock;
+  
+  if(numOfBlocks == maxNumBlocks) {
+  	//printf("numOfBlocks: %d, maxNumOfBlocks %d\n", numOfBlocks, maxNumOfBlocks);	
+	//replace
+
+	int indexToReplace = rand() % numOfBlocks; 
+	placeForBlock = ((struct cacheBlock *)cacheMemPtr) + indexToReplace;
+
+  } else {
+  	placeForBlock = ((struct cacheBlock *)cacheMemPtr) + numOfBlocks;
+  }
+
   placeForBlock->diskBlockNumber = diskBlockNumber;
   memcpy((char *)placeForBlock + sizeof(int), buf, bytesRead); // copy the content of the parameter buf into the place found for the block in cache
   numOfBlocks++;
 
+}
+
+/*
+ * Gets the specified block from the cache. Returns 512 if block exists, -1 otherwise
+ */
+
+int getBlockFromCache(int diskBlockNumber, void *buf, int index)
+{
+	memcpy(buf, (struct cacheBlock *)cacheMemPtr + index, FILE_BLOCK_SIZE);
+	return FILE_BLOCK_SIZE;
 }
 
 
@@ -80,7 +105,7 @@ int isBlockInCache(int diskBlockNumber)
   
   for(int i = 0; i < numOfBlocks; i++) {
   	if(((struct cacheBlock *)cacheMemPtr)[i].diskBlockNumber == diskBlockNumber)	// iterate through blocks to find if a cacheBlock exists associated with the parameter
-		return 1;
+		return i;
   }
 
   return -1;
