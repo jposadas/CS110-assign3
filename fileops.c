@@ -86,6 +86,7 @@ Fileops_open(char *pathname)
   if (fd >= MAX_FILES) {
     return -1;  // No open file slots
   }
+  
   openFileTable[fd].pathname = strdup(pathname); // Save our own copy
   openFileTable[fd].cursor = 0;
   openFileTable[fd].inumber = inumber;
