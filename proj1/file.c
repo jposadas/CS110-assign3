@@ -24,16 +24,16 @@ file_getblock(struct unixfilesystem *fs, int inumber, int blockNum, void *buf)
 		
 		int numBytesRead;
 		//cache it up
-		numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf);
+		//numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf);
 		//printf("numBytesRead: %d, diskBlockNum: %d\n", numBytesRead, diskBlockNum);
 		int cacheIndex = isBlockInCache(diskBlockNum);
-		/*	
+			
 		if(cacheIndex > -1) {
 			numBytesRead = getBlockFromCache(diskBlockNum, buf, cacheIndex);
 		} else {
 			numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf); 
 			putBlockInCache(diskBlockNum, buf, numBytesRead); 
-		}*/
+		}
 		
 		
 		if(numBytesRead == -1) return -1;

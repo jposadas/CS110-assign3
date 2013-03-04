@@ -48,9 +48,12 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 		uint16_t blocks[FILE_BLOCKS_IN_IMGSCTR]; 
 		if(indirectBlock > 6) blockToRead = 7; // Read last element of blocks if the indirect block is bigger than 6	
 		
+		int diskBlockNum = inp->i_addr[blockToRead];
+
 		// cache it up
-		
-		int bytesRead = diskimg_readsector(fs->dfd, inp->i_addr[blockToRead], &blocks);
+		//int cacheIndex = isBlockInCache(diskBlockNum);
+
+		int bytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &blocks);
 		
 		if(indirectBlock <= 6) {	
 		

@@ -68,11 +68,11 @@ void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
 
   } else {
   	placeForBlock = ((struct cacheBlock *)cacheMemPtr) + numOfBlocks;
+  	numOfBlocks++;
   }
 
   placeForBlock->diskBlockNumber = diskBlockNumber;
   memcpy((char *)placeForBlock + sizeof(int), buf, bytesRead); // copy the content of the parameter buf into the place found for the block in cache
-  numOfBlocks++;
 
 }
 
@@ -82,7 +82,7 @@ void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
 
 int getBlockFromCache(int diskBlockNumber, void *buf, int index)
 {
-	memcpy(buf, (struct cacheBlock *)cacheMemPtr + index, FILE_BLOCK_SIZE);
+	memcpy(buf, (char *)((struct cacheBlock *)cacheMemPtr + index) + sizeof(int) , FILE_BLOCK_SIZE);
 	return FILE_BLOCK_SIZE;
 }
 
