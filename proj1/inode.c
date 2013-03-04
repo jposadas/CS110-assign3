@@ -28,7 +28,7 @@ inode_iget(struct unixfilesystem *fs, int inumber, struct inode *inp)
 	int cacheIndex = isBlockInCache(sectorNumber);
 	
 	if(cacheIndex > -1) {
-		bytesRead = getBlockFromCache(sectorNumber, &buffer, cacheIndex);
+		bytesRead = getBlockFromCache(&buffer, cacheIndex);
 	} else {
 		
 		bytesRead = diskimg_readsector(fs->dfd, sectorNumber, &buffer);
@@ -68,7 +68,7 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 		int cacheIndex = isBlockInCache(diskBlockNum);
 
 		if(cacheIndex > -1) {
-			numBytesRead = getBlockFromCache(diskBlockNum, &blocks, cacheIndex);
+			numBytesRead = getBlockFromCache(&blocks, cacheIndex);
 		} else {
 			numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &blocks);
 			putBlockInCache(diskBlockNum, &blocks, numBytesRead);
@@ -89,7 +89,7 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 			cacheIndex = isBlockInCache(diskBlockNum);
 
 			if(cacheIndex > -1) {
-				numBytesRead = getBlockFromCache(diskBlockNum, &buffer, cacheIndex);
+				numBytesRead = getBlockFromCache(&buffer, cacheIndex);
 			} else {
 					numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &buffer);
 					putBlockInCache(diskBlockNum, &buffer, numBytesRead);

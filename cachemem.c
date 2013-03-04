@@ -80,7 +80,7 @@ void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
  * Gets the specified block from the cache. Returns 512 if block exists, -1 otherwise
  */
 
-int getBlockFromCache(int diskBlockNumber, void *buf, int index)
+int getBlockFromCache(void *buf, int index)
 {
 	memcpy(buf, (char *)((struct cacheBlock *)cacheMemPtr + index) + sizeof(int) , FILE_BLOCK_SIZE);
 	return FILE_BLOCK_SIZE;

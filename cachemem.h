@@ -26,7 +26,7 @@ int CacheMem_Init(int sizeInKB);
 
 void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead); // puts block in cache
 
-int getBlockFromCache(int diskBlockNumber, void *buf, int index); // gets the specified stored block in the cache
+int getBlockFromCache(void *buf, int index); // gets the specified stored block in the cache
 
 int totalCacheSize(); // returns the total size in the cache
 

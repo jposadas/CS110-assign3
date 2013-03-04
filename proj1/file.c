@@ -29,7 +29,7 @@ file_getblock(struct unixfilesystem *fs, int inumber, int blockNum, void *buf)
 		int cacheIndex = isBlockInCache(diskBlockNum);
 			
 		if(cacheIndex > -1) {
-			numBytesRead = getBlockFromCache(diskBlockNum, buf, cacheIndex);
+			numBytesRead = getBlockFromCache(buf, cacheIndex);
 		} else {
 			numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, buf); 
 			putBlockInCache(diskBlockNum, buf, numBytesRead); 
