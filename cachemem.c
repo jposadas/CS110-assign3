@@ -19,6 +19,8 @@ void *cacheMemPtr;
 static int maxNumBlocks;
 static int numOfBlocks;
 
+static int blockNumArray[1024 * 1024 / sizeof(struct cacheBlock)];
+
 /*
  * Allocate memory of the specified size for the data cache optimizations
  * Return -1 on error, 0 on success. 
@@ -43,8 +45,9 @@ CacheMem_Init(int sizeInKB)
   }
   cacheMemSizeInKB = sizeInKB;
   cacheMemPtr = memPtr;
-  maxNumBlocks = cacheMemSizeInKB * 1024 / FILE_BLOCK_SIZE; 
+  maxNumBlocks = cacheMemSizeInKB * 1024 / sizeof(struct cacheBlock); 
   numOfBlocks = 0;
+
   return 0;
 }
 
@@ -59,19 +62,24 @@ void putBlockInCache(int diskBlockNumber, void *buf, int bytesRead)
 {
   struct cacheBlock *placeForBlock;
   
+  int index;
+
   if(numOfBlocks == maxNumBlocks) {
   	//printf("numOfBlocks: %d, maxNumOfBlocks %d\n", numOfBlocks, maxNumOfBlocks);	
 	//replace
 
 	int indexToReplace = rand() % numOfBlocks; 
 	placeForBlock = ((struct cacheBlock *)cacheMemPtr) + indexToReplace;
-
+	index = indexToReplace;
+  
   } else {
   	placeForBlock = ((struct cacheBlock *)cacheMemPtr) + numOfBlocks;
-  	numOfBlocks++;
+  	index = numOfBlocks;
+	numOfBlocks++;
   }
 
   placeForBlock->diskBlockNumber = diskBlockNumber;
+  blockNumArray[index] = diskBlockNumber;
   memcpy((char *)placeForBlock + sizeof(int), buf, bytesRead); // copy the content of the parameter buf into the place found for the block in cache
 
 }
@@ -104,7 +112,8 @@ int isBlockInCache(int diskBlockNumber)
 {
   
   for(int i = 0; i < numOfBlocks; i++) {
-  	if(((struct cacheBlock *)cacheMemPtr)[i].diskBlockNumber == diskBlockNumber)	// iterate through blocks to find if a cacheBlock exists associated with the parameter
+  	//if(((struct cacheBlock *)cacheMemPtr)[i].diskBlockNumber == diskBlockNumber)	// iterate through blocks to find if a cacheBlock exists associated with the parameter
+	if(blockNumArray[i] == diskBlockNumber)	
 		return i;
   }
 

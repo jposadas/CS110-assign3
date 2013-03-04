@@ -17,8 +17,11 @@
 
 typedef struct PathstoreElement {
   char *pathname;
+  int err;
+  char checksum[CHKSUMFILE_SIZE];
   struct PathstoreElement *nextElement;
 } PathstoreElement;
+
 
 static uint64_t numdifferentfiles = 0;
 static uint64_t numsamefiles = 0;
@@ -88,6 +91,7 @@ Pathstore_path(Pathstore *store, char *pathname, int discardDuplicateFiles)
     return NULL;
   }
   e->nextElement = store->elementList;
+  //e->err = chksumfile_bypathname((struct unixfilesystem *)(store->fshandle), pathname, e->checksum);
   store->elementList = e;
 
   return e->pathname;
@@ -110,6 +114,8 @@ SameFileIsInStore(Pathstore *store, char *pathname)
   }
   return 0; // Not found in store
 }
+
+
 
 /*
  * Do the two pathnames refer to a file with the same contents.
