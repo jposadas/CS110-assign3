@@ -5,6 +5,7 @@
 
 #include "inode.h"
 #include "diskimg.h"
+#include "../cachemem.h"
 
 #define FILE_BLOCKS_IN_IMGSCTR 256
 
@@ -23,7 +24,19 @@ inode_iget(struct unixfilesystem *fs, int inumber, struct inode *inp)
 
 	// cache it up?
 
-	int bytesRead = diskimg_readsector(fs->dfd, sectorNumber, &buffer);
+	int bytesRead;
+	int cacheIndex = isBlockInCache(sectorNumber);
+	
+	if(cacheIndex > -1) {
+		bytesRead = getBlockFromCache(sectorNumber, &buffer, cacheIndex);
+	} else {
+		
+		bytesRead = diskimg_readsector(fs->dfd, sectorNumber, &buffer);
+		putBlockInCache(sectorNumber, &buffer, bytesRead);	
+	}
+	
+	
+	//int bytesRead = diskimg_readsector(fs->dfd, sectorNumber, &buffer);
 	
 	if(bytesRead == -1) return -1;
 	
@@ -48,12 +61,20 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 		uint16_t blocks[FILE_BLOCKS_IN_IMGSCTR]; 
 		if(indirectBlock > 6) blockToRead = 7; // Read last element of blocks if the indirect block is bigger than 6	
 		
+		int numBytesRead;
 		int diskBlockNum = inp->i_addr[blockToRead];
-
+		
 		// cache it up
-		//int cacheIndex = isBlockInCache(diskBlockNum);
+		int cacheIndex = isBlockInCache(diskBlockNum);
 
-		int bytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &blocks);
+		if(cacheIndex > -1) {
+			numBytesRead = getBlockFromCache(diskBlockNum, &blocks, cacheIndex);
+		} else {
+			numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &blocks);
+			putBlockInCache(diskBlockNum, &blocks, numBytesRead);
+		}
+
+	//	numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &blocks);
 		
 		if(indirectBlock <= 6) {	
 		
@@ -63,8 +84,18 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 			uint16_t buffer[FILE_BLOCKS_IN_IMGSCTR];
 			indirectBlock = blockNum - 7 * FILE_BLOCKS_IN_IMGSCTR;
 			indirectBlock = indirectBlock / FILE_BLOCKS_IN_IMGSCTR; // calculate the block for the second level of indirection
-			bytesRead = diskimg_readsector(fs->dfd, blocks[indirectBlock], &buffer);
-			if (bytesRead == -1) return -1;
+			
+			diskBlockNum = blocks[indirectBlock];
+			cacheIndex = isBlockInCache(diskBlockNum);
+
+			if(cacheIndex > -1) {
+				numBytesRead = getBlockFromCache(diskBlockNum, &buffer, cacheIndex);
+			} else {
+					numBytesRead = diskimg_readsector(fs->dfd, diskBlockNum, &buffer);
+					putBlockInCache(diskBlockNum, &buffer, numBytesRead);
+			}
+				
+			if (numBytesRead == -1) return -1;
 			return buffer[blockNum % FILE_BLOCKS_IN_IMGSCTR];
 		}
 	}
